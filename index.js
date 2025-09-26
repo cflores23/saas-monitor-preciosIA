@@ -1,11 +1,11 @@
+require('dotenv').config();
 const express = require('express');
-const app = express();
-const PORT = 4000;
+require('dotenv').config();
 
-app.get('/', (req, res) => {
-    res.send('Servidor corriendo!');
+const app = require('./src/app');
+const PORT = process.env.PORT || 4000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-});
