@@ -3,6 +3,9 @@ const express = require('express');
 const app = express();
 const routes = require('./routes/exampleRoutes');
 const cors = require('cors');
+console.log(">>> Despliegue automático funcionando <<<");
+console.log(">>> Despliegue automático funcionando <<<");
+
 app.use(cors());
 
 app.use(express.json());
