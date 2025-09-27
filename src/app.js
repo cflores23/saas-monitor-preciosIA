@@ -6,10 +6,10 @@ const cors = require('cors');
 app.use(cors());
 
 app.use(express.json());
-app.use('/api', routes);
+app.use('/api/example', routes);;
 
 const dbTestRoutes = require('./routes/dbTest');
-app.use('/api', dbTestRoutes);
+app.use('/api/db-test', dbTestRoutes);
 
 
 module.exports = app;
