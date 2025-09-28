@@ -9,7 +9,7 @@ router.get('/ping', (req, res) => res.send('pong'));
 // Ruta de test de DB
 router.get('/db-test', async (req, res) => {
     try {
-        const [rows] = await db.query('`SELECT NOW() AS current_time`');
+        const [rows] = await connection.query("SELECT NOW() AS current_time");
         res.json({
             success: true,
             message: 'Conexión a la base de datos exitosa 🎉',
