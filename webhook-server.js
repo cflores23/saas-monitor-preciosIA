@@ -11,7 +11,7 @@ app.post("/github-webhook", (req, res) => {
   const event = req.headers["x-github-event"];
   if (event === "push") {
     console.log("🔔 Push recibido desde GitHub. Ejecutando deploy...");
-    exec("./deploy.sh", (error, stdout, stderr) => {
+    exec("/var/www/saas-monitor-preciosIA/deploy.sh", (error, stdout, stderr) => {
       if (error) {
         console.error(`Error: ${error.message}`);
         return;

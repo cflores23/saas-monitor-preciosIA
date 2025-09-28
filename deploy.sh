@@ -7,7 +7,7 @@
 APP_DIR="/var/www/saas-monitor-preciosIA"
 APP_NAME="saas-monitor"
 
-echo "🚀 Iniciando despliegue de $APP_NAME..."
+echo "🚀 Iniciando despliegue de ;) $APP_NAME..."
 
 # Ir al directorio de la app
 cd $APP_DIR || { echo "Error: no se puede acceder a $APP_DIR"; exit 1; }
