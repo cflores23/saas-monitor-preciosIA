@@ -10,7 +10,7 @@ router.get('/ping', (req, res) => res.send('pong'));
 router.get('/db-test', async (req, res) => {
     try {
         // 🔹 Usar db (el pool de mysql2/promise)
-        const [rows] = await db.query('SELECT NOW() AS current_time');
+        const [rows] = await db.query('SELECT NOW() AS `current_time`');
         res.json({
             success: true,
             message: 'Conexión a la base de datos exitosa 🎉',
