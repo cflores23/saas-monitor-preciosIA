@@ -12,7 +12,7 @@ app.use(express.json());
 app.use('/api/example', routes);;
 
 const dbTestRoutes = require('./routes/dbTest');
-app.use('/api/db-test', dbTestRoutes);
+app.use('/api', dbTestRoutes);
 
 
 module.exports = app;
