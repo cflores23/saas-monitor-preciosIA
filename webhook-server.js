@@ -7,7 +7,7 @@ const PORT = 5000; // Puerto para escuchar el webhook
 
 app.use(bodyParser.json());
 
-app.post("/github-webhook", (req, res) => {
+app.post("/verificar_webhook.sh", (req, res) => {
   const event = req.headers["x-github-event"];
   if (event === "push") {
     console.log("🔔 Push recibido desde GitHub. Ejecutando deploy...");
