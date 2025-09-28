@@ -23,14 +23,7 @@ jobs:
         with:
           node-version: 20
 
-      # 3️⃣ Limpiar conflictos de package.json y package-lock.json
-      - name: Resolve package.json conflicts
-        run: |
-          git checkout --ours package.json || echo "No conflict in package.json"
-          git checkout --ours package-lock.json || echo "No conflict in package-lock.json"
-          npm install
-
-      # 4️⃣ Verificar conexión SSH con EC2
+      # 3️⃣ Verificar conexión SSH con EC2
       - name: Test SSH connection
         uses: appleboy/ssh-action@master
         with:
@@ -41,7 +34,7 @@ jobs:
             echo "SSH conexión exitosa"
             whoami
 
-      # 5️⃣ Crear carpeta de despliegue si no existe
+      # 4️⃣ Crear carpeta de despliegue si no existe
       - name: Create deploy folder on EC2
         uses: appleboy/ssh-action@master
         with:
@@ -52,7 +45,7 @@ jobs:
             sudo mkdir -p ${{ env.DEPLOY_PATH }}
             sudo chown -R ${{ secrets.EC2_USERNAME }}:${{ secrets.EC2_USERNAME }} ${{ env.DEPLOY_PATH }}
 
-      # 6️⃣ Copiar archivos al servidor
+      # 5️⃣ Copiar archivos al servidor
       - name: Deploy to EC2
         uses: appleboy/scp-action@master
         with:
@@ -64,7 +57,7 @@ jobs:
           strip_components: 1
           overwrite: true
 
-      # 7️⃣ Instalar dependencias y levantar app con PM2
+      # 6️⃣ Instalar dependencias y levantar app con PM2
       - name: Configure and run app
         uses: appleboy/ssh-action@master
         with:
@@ -76,9 +69,5 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
             cd ${{ env.DEPLOY_PATH }}
-            git pull origin dev
-            # Limpiar conflictos antes de instalar
-            git checkout --ours package.json || echo "No conflict in package.json"
-            git checkout --ours package-lock.json || echo "No conflict in package-lock.json"
             npm install
             pm2 restart index.js || pm2 start index.js --name saas-monitor
