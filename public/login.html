@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login SaaS Monitor</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <h1>Prueba de Login con Google</h1>
+
+  <!-- Configuración del botón de Google -->
+  <div id="g_id_onload"
+       data-client_id="TU_CLIENT_ID.apps.googleusercontent.com"
+       data-login_uri="https://TU_DOMINIO/api/auth/google-popup"
+       data-auto_prompt="false">
+  </div>
+
+  <div class="g_id_signin"
+       data-type="standard"
+       data-shape="rectangular"
+       data-theme="outline"
+       data-text="signin_with"
+       data-size="large"
+       data-logo_alignment="left">
+  </div>
+</body>
+</html>

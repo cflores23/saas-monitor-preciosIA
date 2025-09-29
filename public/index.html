@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login con Google</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <h1>Login con Google</h1>
+
+  <div id="g_id_onload"
+       data-client_id="193722246343-36763nfs4mnod2r70b722tj26qd78m7d.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse"
+       data-auto_prompt="false">
+  </div>
+
+  <div class="g_id_signin" 
+       data-type="standard" 
+       data-size="large"
+       data-theme="outline" 
+       data-text="sign_in_with" 
+       data-shape="rectangular"
+       data-logo_alignment="left">
+  </div>
+
+  <script>
+    function handleCredentialResponse(response) {
+      const id_token = response.credential;
+
+      fetch('/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_token })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('Usuario autenticado: ' + data.user.email);
+          window.location.href = '/auth/dashboard';
+        } else {
+          alert('Error autenticando: ' + data.error);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
