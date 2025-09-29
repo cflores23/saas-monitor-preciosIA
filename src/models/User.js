@@ -3,7 +3,7 @@ const db = require('../../config/db');
 
 const User = {
   async findByGoogleId(googleId) {
-    const [rows] = await pool.query('SELECT * FROM users WHERE google_id = ?', [googleId]);
+    const [rows] = await db.query('SELECT * FROM users WHERE google_id = ?', [googleId]);
     return rows[0];
   },
 
@@ -16,7 +16,7 @@ const User = {
         [profile.id, profile.displayName, profile.emails[0].value, profile.photos[0]?.value || null]
       );
     } else {
-      await pool.query(
+      await db.query(
         `UPDATE users
          SET display_name = ?, email = ?, photo = ?
          WHERE google_id = ?`,
