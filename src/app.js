@@ -10,6 +10,7 @@ const authRoutes = require('./routes/authRoutes');
 const app = express();
 console.log(">>> Despliegue automático funcionando <<<");
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
@@ -25,6 +26,6 @@ app.use(passport.session());
 // ✅ Rutas
 app.use('/auth', authRoutes);
 app.use('/api/example', routes);
-app.use('/api', dbTestRoutes);
+app.use('/api', dbTestRoutes); // Aquí estará el /ping final
 
 module.exports = app;

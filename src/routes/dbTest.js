@@ -1,12 +1,8 @@
-// routes/dbTest.js
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db');
+const db = require('../config/db'); // Asegúrate de que apunte a config/db.js
 
-// Ruta de prueba rápida
-router.get('/ping', (req, res) => res.send('pong'));
-
-// Ruta de test de DB
+// ✅ Endpoint definitivo de test de base de datos
 router.get('/db-test', async (req, res) => {
     try {
         // 🔹 Usar db (el pool de mysql2/promise)
