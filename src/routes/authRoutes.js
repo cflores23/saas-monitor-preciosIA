@@ -8,9 +8,13 @@ router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
+// Callback de Google
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
-  (req, res) => res.redirect('/dashboard')
+    passport.authenticate('google', { failureRedirect: '/' }),
+    (req, res) => {
+        // Login exitoso
+        res.send(`¡Hola ${req.user.displayName}! Sesión iniciada correctamente.`);
+    }
 );
 
 router.get('/dashboard', dashboard);
