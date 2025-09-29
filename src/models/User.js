@@ -1,5 +1,5 @@
 // src/models/User.js
-const db = require('../../config/db');
+const db = require('../config/db.js');
 
 const User = {
   async findByGoogleId(googleId) {
