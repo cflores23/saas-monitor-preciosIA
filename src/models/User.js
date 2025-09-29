@@ -10,7 +10,7 @@ const User = {
   async createOrUpdate(profile) {
     const user = await this.findByGoogleId(profile.id);
     if (!user) {
-      await pool.query(
+      await db.query(
         `INSERT INTO users (google_id, display_name, email, photo)
          VALUES (?, ?, ?, ?)`,
         [profile.id, profile.displayName, profile.emails[0].value, profile.photos[0]?.value || null]
