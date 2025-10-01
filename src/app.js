@@ -5,6 +5,9 @@ const session = require('express-session');
 const authRoutes = require('./routes/authRoutes');
 const exampleRoutes = require('./routes/exampleRoutes');
 const dbTestRoutes = require('./routes/dbTest');
+const scraperRoutes = require('./routes/scraperRoutes');
+const allowedSitesRoutes = require('./routes/allowedSitesRoutes');
+const cron = require('node-cron');
 
 const app = express();
 
@@ -21,5 +24,18 @@ app.use(session({
 app.use('/auth', authRoutes);
 app.use('/api/example', exampleRoutes);
 app.use('/api', dbTestRoutes);
+app.use('/api/scraper', scraperRoutes);
+app.use('/api/allowed-sites', allowedSitesRoutes);
+
+// 🕑 Ejecutar el scraper todos los días a medianoche (00:00)
+cron.schedule('0 3 * * *', async () => {
+  console.log('⏳ Ejecutando scraper automático (cada 24h, medianoche)...');
+  try {
+    await scrapeAllUsers();
+    console.log('✅ Scraper automático completado');
+  } catch (err) {
+    console.error('❌ Error en scraper automático:', err.message);
+  }
+});
 
 module.exports = app;

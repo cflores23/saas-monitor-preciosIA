@@ -11,9 +11,37 @@
 
   <div id="welcome">Cargando usuario...</div>
 
+  <h2>Mis Productos</h2>
+  <div>
+    <input type="text" id="name" placeholder="Nombre del producto">
+    <input type="text" id="url" placeholder="URL del producto">
+    <input type="text" id="description" placeholder="Descripción opcional">
+    <button id="addBtn">Agregar Producto</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>URL</th>
+        <th>Descripción</th>
+        <th>Último Precio</th>
+        <th>Fecha Precio</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="productsTable"></tbody>
+  </table>
+
+  <button id="scrapeBtn">Ejecutar Scraper</button>
+  <div id="scraperResult" style="margin-top:10px; font-weight: bold;"></div>
   <button id="logoutBtn">Cerrar sesión</button>
 
   <script>
+    let currentUserId = null;
+
+    // Mostrar usuario y cargar productos
     fetch('/auth/session-user')
       .then(res => {
         if (!res.ok) throw new Error('No autenticado');
@@ -21,19 +49,108 @@
       })
       .then(data => {
         const user = data.user;
+        currentUserId = user.id;
         document.getElementById('welcome').textContent = `Bienvenido, ${user.displayName}`;
+        loadProducts();
       })
       .catch(err => {
         alert('Debes iniciar sesión primero');
         window.location.href = '/login.html';
       });
-  
+
+    // Cargar productos del usuario y sus últimos precios
+    async function loadProducts() {
+      const res = await fetch('/products');
+      const data = await res.json();
+      if (!data.success) return;
+
+      const tbody = document.getElementById('productsTable');
+      tbody.innerHTML = '';
+      for (const p of data.data) {
+        // Obtener último precio
+        const priceRes = await fetch(`/products/${p.id}/last-price`);
+        const priceData = await priceRes.json();
+        const lastPrice = priceData.success ? priceData.price : '-';
+        const priceDate = priceData.success ? priceData.recorded_at : '-';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${p.id}</td>
+          <td>${p.name}</td>
+          <td><a href="${p.url}" target="_blank">${p.url}</a></td>
+          <td>${p.description || ''}</td>
+          <td>${lastPrice}</td>
+          <td>${priceDate}</td>
+          <td><button onclick="deleteProduct(${p.id})">Eliminar</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    // Agregar producto
+    async function addProduct() {
+      const name = document.getElementById('name').value;
+      const url = document.getElementById('url').value;
+      const description = document.getElementById('description').value;
+      if (!name || !url) return alert('Ingresa nombre y URL');
+
+      await fetch('/products/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, url, description })
+      });
+
+      document.getElementById('name').value = '';
+      document.getElementById('url').value = '';
+      document.getElementById('description').value = '';
+      loadProducts();
+    }
+
+    // Eliminar producto
+    async function deleteProduct(id) {
+      await fetch('/products/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      loadProducts();
+    }
+
+    // Ejecutar scraper
+    const resultDiv = document.getElementById('scraperResult');
+
+    document.getElementById('scrapeBtn').addEventListener('click', async () => {
+      resultDiv.textContent = "Ejecutando scraper..."; 
+      resultDiv.style.color = "blue";
+
+      try {
+        const res = await fetch('/scraper/run');
+        const result = await res.json();
+
+        if (result.success) {
+          resultDiv.textContent = result.message; 
+          resultDiv.style.color = "green";
+        } else {
+          resultDiv.textContent = 'Error: ' + result.message;
+          resultDiv.style.color = "red";
+        }
+
+        loadProducts(); // refrescar tabla
+      } catch (err) {
+        resultDiv.textContent = "Error ejecutando scraper.";
+        resultDiv.style.color = "red";
+      }
+    });
+
+
+
+    // Eventos
+    document.getElementById('addBtn').addEventListener('click', addProduct);
     document.getElementById('logoutBtn').addEventListener('click', () => {
-      fetch('/auth/logout')
-        .then(() => window.location.href = '/login.html');
+      fetch('/auth/logout').then(() => window.location.href = '/login.html');
     });
   </script>
-  
 </body>
 </html>
+
 

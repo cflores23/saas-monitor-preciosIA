@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrar Sitios Permitidos</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
+    h1 { color: #333; }
+    input, button { padding: 8px; margin: 5px; font-size: 1em; }
+    input { width: 200px; }
+    button { cursor: pointer; }
+    table { border-collapse: collapse; margin-top: 20px; width: 100%; background: #fff; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #eee; }
+    .btn-delete { background-color: #e74c3c; color: #fff; border: none; }
+    .btn-delete:hover { background-color: #c0392b; }
+    .btn-add { background-color: #3498db; color: #fff; border: none; }
+    .btn-add:hover { background-color: #2980b9; }
+  </style>
+</head>
+<body>
+  <h1>Administrar Sitios Permitidos</h1>
+
+  <div>
+    <input type="text" id="domain" placeholder="Dominio (ej: amazon.com)">
+    <input type="text" id="description" placeholder="Descripción opcional">
+    <button id="addBtn" class="btn-add">Agregar</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Dominio</th><th>Descripción</th><th>Acción</th></tr>
+    </thead>
+    <tbody id="sitesTable"></tbody>
+  </table>
+
+  <script>
+    async function loadSites() {
+      try {
+        const res = await fetch('/allowed-sites');
+        if (!res.ok) throw new Error('Error cargando sitios');
+        const sites = await res.json();
+        const tbody = document.getElementById('sitesTable');
+        tbody.innerHTML = '';
+        sites.forEach(s => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${s.id}</td>
+            <td>${s.domain}</td>
+            <td>${s.description || ''}</td>
+            <td><button class="btn-delete" onclick="deleteSite(${s.id})">Eliminar</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function addSite() {
+      const domain = document.getElementById('domain').value.trim();
+      const description = document.getElementById('description').value.trim();
+      if (!domain) return alert('Ingresa un dominio');
+
+      document.getElementById('addBtn').disabled = true;
+
+      try {
+        const res = await fetch('/allowed-sites/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ domain, description })
+        });
+        if (!res.ok) throw new Error('Error agregando el dominio');
+        document.getElementById('domain').value = '';
+        document.getElementById('description').value = '';
+        loadSites();
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        document.getElementById('addBtn').disabled = false;
+      }
+    }
+
+    async function deleteSite(id) {
+      if (!confirm('¿Seguro que quieres eliminar este dominio?')) return;
+      try {
+        const res = await fetch('/allowed-sites/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        if (!res.ok) throw new Error('Error eliminando el dominio');
+        loadSites();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addSite);
+
+    // Cargar tabla al iniciar
+    loadSites();
+  </script>
+</body>
+</html>
