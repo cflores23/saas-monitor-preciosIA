@@ -37,7 +37,7 @@ router.post('/google-popup', async (req, res) => {
 
 // Dashboard protegido
 router.get('/dashboard', ensureAuthenticated, (req, res) => {
-  res.send(`<h1>Bienvenido ${req.session.user.displayName}</h1>`);
+  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
 });
 
 // Logout
