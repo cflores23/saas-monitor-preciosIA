@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
+const { ensureAuthenticated } = require('../middleware/authMiddleware');
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client(CLIENT_ID);
@@ -25,7 +26,7 @@ router.post('/google-popup', async (req, res) => {
 
     await User.createOrUpdate(profile);
 
-    // Crear sesión opcional
+    // Crear sesión
     req.session.user = profile;
 
     res.json({ success: true, user: profile });
@@ -35,15 +36,14 @@ router.post('/google-popup', async (req, res) => {
 });
 
 // Dashboard protegido
-router.get('/dashboard', (req, res) => {
-  if (!req.session.user) return res.status(401).send('No autenticado');
+router.get('/dashboard', ensureAuthenticated, (req, res) => {
   res.send(`<h1>Bienvenido ${req.session.user.displayName}</h1>`);
 });
 
 // Logout
 router.get('/logout', (req, res) => {
   req.session.destroy();
-  res.send('Sesión cerrada');
+  res.redirect('/login.html'); // redirige al login
 });
 
 module.exports = router;
