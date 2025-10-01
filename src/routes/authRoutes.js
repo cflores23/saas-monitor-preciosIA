@@ -39,7 +39,7 @@ router.post('/google-popup', async (req, res) => {
 
 // Dashboard protegido
 router.get('/dashboard', ensureAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+  res.sendFile(path.join(__dirname, '../../public/dashboard.html'));
 });
 
 // Logout
