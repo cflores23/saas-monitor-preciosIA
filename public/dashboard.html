@@ -14,7 +14,6 @@
   <button id="logoutBtn">Cerrar sesión</button>
 
   <script>
-    // Trae datos del usuario desde el backend
     fetch('/auth/session-user')
       .then(res => {
         if (!res.ok) throw new Error('No autenticado');
@@ -28,13 +27,13 @@
         alert('Debes iniciar sesión primero');
         window.location.href = '/login.html';
       });
-
-    // Logout
+  
     document.getElementById('logoutBtn').addEventListener('click', () => {
       fetch('/auth/logout')
         .then(() => window.location.href = '/login.html');
     });
   </script>
+  
 </body>
 </html>
 

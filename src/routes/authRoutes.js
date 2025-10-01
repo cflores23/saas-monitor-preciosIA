@@ -49,10 +49,12 @@ router.get('/logout', (req, res) => {
   res.redirect('/login.html'); // redirige al login
 });
 
-// Devuelve info del usuario autenticado
-router.get('/user', ensureAuthenticated, (req, res) => {
-  res.json(req.session.user);
+// Devuelve datos del usuario de la sesión
+router.get('/session-user', (req, res) => {
+  if (!req.session.user) return res.status(401).json({ success: false });
+  res.json({ success: true, user: req.session.user });
 });
+
 
 
 module.exports = router;
