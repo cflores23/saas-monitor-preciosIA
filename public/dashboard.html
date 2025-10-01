@@ -4,40 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - SaaS Monitor</title>
-  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-  <header>
-    <h1>Dashboard - SaaS Monitor</h1>
-    <div id="welcome"></div>
-  </header>
-  <main>
-    <div class="card">
-      <h2>Sección 1</h2>
-      <p>Información relevante aquí.</p>
-    </div>
-    <div class="card">
-      <h2>Sección 2</h2>
-      <p>Más información aquí.</p>
-    </div>
-    <button id="logoutBtn">Cerrar sesión</button>
-  </main>
+  <h1>Dashboard</h1>
 
-  <div id="welcome"></div>
-<script>
-fetch('/auth/dashboard', { credentials: 'same-origin' })
-  .then(res => {
-    if (!res.ok) throw new Error('No autenticado');
-    return res.json();
-  })
-  .then(user => {
-    document.getElementById('welcome').innerText = `Bienvenido, ${user.displayName}`;
-  })
-  .catch(err => {
-    alert('Debes iniciar sesión primero');
-    window.location.href = '/login.html';
-  });
-</script>
-  
+  <div id="welcome">Cargando usuario...</div>
+
+  <button id="logoutBtn">Cerrar sesión</button>
+
+  <script>
+    // Trae datos del usuario desde el backend
+    fetch('/auth/session-user')
+      .then(res => {
+        if (!res.ok) throw new Error('No autenticado');
+        return res.json();
+      })
+      .then(data => {
+        const user = data.user;
+        document.getElementById('welcome').textContent = `Bienvenido, ${user.displayName}`;
+      })
+      .catch(err => {
+        alert('Debes iniciar sesión primero');
+        window.location.href = '/login.html';
+      });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      fetch('/auth/logout')
+        .then(() => window.location.href = '/login.html');
+    });
+  </script>
 </body>
 </html>
+
