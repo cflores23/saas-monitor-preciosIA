@@ -39,7 +39,7 @@ router.post('/google-popup', async (req, res) => {
 
 // authRoutes.js
 router.get('/dashboard', ensureAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, '../../public/dashboard.html'));s
+  res.sendFile(path.join(__dirname, '../../public/dashboard.html'));
 });
 
 
