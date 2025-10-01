@@ -29,11 +29,12 @@
     function handleCredentialResponse(response) {
       const id_token = response.credential;
 
-      fetch('/auth/google-popup', {
+      fetch('/auth/google-popup', {  // <- coincide con la ruta
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_token })
+        body: JSON.stringify({ credential: id_token }) // <- coincide con el backend
       })
+
       .then(res => res.json())
       .then(data => {
         if (data.success) {
