@@ -37,9 +37,11 @@ router.post('/google-popup', async (req, res) => {
   }
 });
 
+// authRoutes.js
 router.get('/dashboard', ensureAuthenticated, (req, res) => {
-  res.json(req.session.user); // <-- devuelve JSON
+  res.json(req.session.user); // devuelve los datos del usuario en JSON
 });
+
 
 // Logout
 router.get('/logout', (req, res) => {

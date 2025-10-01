@@ -23,20 +23,21 @@
     <button id="logoutBtn">Cerrar sesión</button>
   </main>
 
-  <script>
-    fetch('/auth/dashboard', { credentials: 'same-origin' }) // <- aquí
-      .then(res => {
-        if (!res.ok) throw new Error('No autenticado');
-        return res.json();
-      })
-      .then(user => {
-        document.getElementById('welcome').innerText = `Bienvenido, ${user.displayName}`;
-      })
-      .catch(err => {
-        alert('Debes iniciar sesión primero');
-        window.location.href = '/login.html';
-      });
-  </script>
+  <div id="welcome"></div>
+<script>
+fetch('/auth/dashboard', { credentials: 'same-origin' })
+  .then(res => {
+    if (!res.ok) throw new Error('No autenticado');
+    return res.json();
+  })
+  .then(user => {
+    document.getElementById('welcome').innerText = `Bienvenido, ${user.displayName}`;
+  })
+  .catch(err => {
+    alert('Debes iniciar sesión primero');
+    window.location.href = '/login.html';
+  });
+</script>
   
 </body>
 </html>
