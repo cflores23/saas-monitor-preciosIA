@@ -4,23 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - SaaS Monitor</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
-  <h1>Dashboard</h1>
-
-  <div id="welcome">Cargando...</div>
-
-  <button id="logoutBtn">Cerrar sesión</button>
+  <header>
+    <h1>Dashboard - SaaS Monitor</h1>
+    <div id="welcome"></div>
+  </header>
+  <main>
+    <div class="card">
+      <h2>Sección 1</h2>
+      <p>Información relevante aquí.</p>
+    </div>
+    <div class="card">
+      <h2>Sección 2</h2>
+      <p>Más información aquí.</p>
+    </div>
+    <button id="logoutBtn">Cerrar sesión</button>
+  </main>
 
   <script>
     // Trae los datos del usuario desde el backend
-    fetch('/auth/user')
+    fetch('/auth/dashboard')
       .then(res => {
         if (!res.ok) throw new Error('No autenticado');
         return res.json();
       })
-      .then(data => {
-        document.getElementById('welcome').textContent = `Bienvenido ${data.displayName}`;
+      .then(user => {
+        document.getElementById('welcome').innerText = `Bienvenido, ${user.displayName}`;
       })
       .catch(err => {
         alert('Debes iniciar sesión primero');
