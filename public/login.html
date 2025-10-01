@@ -7,12 +7,12 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <h1>Prueba de Login con Google</h1>
+  <h1>Login con Google - SaaS Monitor</h1>
 
   <!-- Configuración del botón de Google -->
   <div id="g_id_onload"
        data-client_id="377910640945-b6s4a7pcg5qu79ksv5l2lrsm3ahgcr0t.apps.googleusercontent.com"
-       data-login_uri="https://sistecd-labs.shop/api/auth/google-popup"
+       data-login_uri="https://sistecd-labs.shop/auth/google"
        data-auto_prompt="false">
   </div>
 
@@ -24,5 +24,27 @@
        data-size="large"
        data-logo_alignment="left">
   </div>
+
+  <script>
+    // Maneja la respuesta del popup
+    function handleCredentialResponse(response) {
+      const id_token = response.credential;
+
+      fetch('/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_token })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('Usuario autenticado: ' + data.user.email);
+          window.location.href = '/auth/dashboard';
+        } else {
+          alert('Error autenticando: ' + data.error);
+        }
+      });
+    }
+  </script>
 </body>
 </html>

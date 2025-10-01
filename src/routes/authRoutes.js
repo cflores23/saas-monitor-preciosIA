@@ -6,12 +6,12 @@ const User = require('../models/User');
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client(CLIENT_ID);
 
-// Endpoint para recibir ID token desde frontend
-router.post('/google', async (req, res) => {
-  const { id_token } = req.body;
+// Endpoint para recibir ID token desde popup
+router.post('/google-popup', async (req, res) => {
+  const { credential } = req.body; // viene desde el popup como 'credential'
   try {
     const ticket = await client.verifyIdToken({
-      idToken: id_token,
+      idToken: credential,
       audience: CLIENT_ID
     });
     const payload = ticket.getPayload();
@@ -34,11 +34,13 @@ router.post('/google', async (req, res) => {
   }
 });
 
+// Dashboard protegido
 router.get('/dashboard', (req, res) => {
   if (!req.session.user) return res.status(401).send('No autenticado');
   res.send(`<h1>Bienvenido ${req.session.user.displayName}</h1>`);
 });
 
+// Logout
 router.get('/logout', (req, res) => {
   req.session.destroy();
   res.send('Sesión cerrada');
