@@ -24,8 +24,7 @@
   </main>
 
   <script>
-    // Trae los datos del usuario desde el backend
-    fetch('/auth/dashboard')
+    fetch('/auth/dashboard', { credentials: 'same-origin' }) // <- aquí
       .then(res => {
         if (!res.ok) throw new Error('No autenticado');
         return res.json();
@@ -37,12 +36,7 @@
         alert('Debes iniciar sesión primero');
         window.location.href = '/login.html';
       });
-
-    // Logout
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      fetch('/auth/logout')
-        .then(() => window.location.href = '/login.html');
-    });
   </script>
+  
 </body>
 </html>
