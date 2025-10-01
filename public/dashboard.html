@@ -8,19 +8,19 @@
 <body>
   <h1>Dashboard</h1>
 
-  <div id="welcome"></div>
+  <div id="welcome">Cargando...</div>
 
   <button id="logoutBtn">Cerrar sesión</button>
 
   <script>
     // Trae los datos del usuario desde el backend
-    fetch('/auth/dashboard')
+    fetch('/auth/user')
       .then(res => {
         if (!res.ok) throw new Error('No autenticado');
-        return res.text();
+        return res.json();
       })
-      .then(html => {
-        document.getElementById('welcome').innerHTML = html;
+      .then(data => {
+        document.getElementById('welcome').textContent = `Bienvenido ${data.displayName}`;
       })
       .catch(err => {
         alert('Debes iniciar sesión primero');
