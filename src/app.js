@@ -11,8 +11,7 @@ const cron = require('node-cron');
 const path = require('path');
 
 // Importar scraper correctamente
-const { scrapeAllUsers } = require(path.join(__dirname, 'src', 'scraper', 'multiScraper'));
-
+const { scrapeAllUsers } = require(path.join(__dirname, 'scraper', 'multiScraper'));
 const app = express();
 
 app.use(cors());
