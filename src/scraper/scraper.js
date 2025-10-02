@@ -30,21 +30,22 @@ async function scrapeProduct(url) {
     let price = '';
 
     if (hostname.includes('bestbuy.com')) {
-      name = await page.$eval('h1.sku-title, h1.sku-header__title', el => el.innerText.trim()).catch(() => '');
+      // Nombre
+      const [nameEl] = await page.$x('//h1[contains(@class,"sku-title") or contains(@class,"sku-header__title")]');
+      name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
 
-      await page.waitForSelector('.priceView-hero-price span, .priceView-customer-price span, [data-testid="customer-price"]', { timeout: 15000 }).catch(() => null);
+      // Precio (XPath profundo)
+      const priceXPath = '/html/body/div[5]/div[4]/div[1]/div/div[4]/div/div/div[1]/div/div[1]/div[1]/div[1]/div/div/div/div[1]/span';
+      await page.waitForXPath(priceXPath, { timeout: 15000 });
+      const [priceEl] = await page.$x(priceXPath);
+      price = priceEl ? await page.evaluate(el => el.innerText.trim(), priceEl) : '';
 
-      price = await page.$eval('.priceView-hero-price span', el => el.innerText.trim())
-        .catch(async () => {
-          return await page.$eval('.priceView-customer-price span', el => el.innerText.trim())
-            .catch(async () => {
-              return await page.$eval('[data-testid="customer-price"]', el => el.innerText.trim()).catch(() => '');
-            });
-        });
     } else if (hostname.includes('apple.com')) {
-      await page.waitForSelector('h1.product-title').catch(() => {});
-      name = await page.$eval('h1.product-title', el => el.innerText.trim()).catch(() => '');
-      price = await page.$eval('[data-autom="current-price"]', el => el.innerText.trim()).catch(() => '');
+      const [nameEl] = await page.$x('//h1[contains(@class,"product-title")]');
+      name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
+
+      const [priceEl] = await page.$x('//span[@data-autom="current-price"]');
+      price = priceEl ? await page.evaluate(el => el.innerText.trim(), priceEl) : '';
     } else {
       throw new Error('Dominio no permitido');
     }
@@ -63,3 +64,4 @@ async function scrapeProduct(url) {
 }
 
 module.exports = { scrapeProduct };
+
