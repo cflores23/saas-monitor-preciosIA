@@ -3,9 +3,28 @@ const puppeteer = require('puppeteer');
 const db = require('../config/db');
 const { URL } = require('url');
 
+const browser = await puppeteer.launch({
+  headless: true, // 👈 usa el clásico
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--no-zygote',
+    '--single-process',
+    '--disable-features=site-per-process'
+  ]
+});
+
+
 async function scrapeProduct(page, url) {
   try {
+    console.log("🌐 Navegando a:", url);
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    console.log("✅ Página cargada:", url);
+
+    await page.screenshot({ path: 'test.png', fullPage: true });
+    console.log("📸 Captura tomada para debug");
 
     const hostname = new URL(url).hostname;
     let name = '';
