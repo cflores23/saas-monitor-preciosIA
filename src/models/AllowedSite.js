@@ -4,13 +4,15 @@ const db = require('../config/db');
 const AllowedSite = {
   // Buscar dominio permitido por su nombre
   async findByDomain(domain) {
+    // Normalizar el dominio para que coincida aunque tenga 'www.' en la BD
+    const normalized = domain.replace(/^www\./, '');
     const [rows] = await db.query(
-      'SELECT * FROM allowed_sites WHERE domain = ? LIMIT 1',
-      [domain]
+      'SELECT * FROM allowed_sites WHERE REPLACE(domain, "www.", "") = ? LIMIT 1',
+      [normalized]
     );
     return rows[0] || null;
   },
-
+  
   // Crear un nuevo dominio permitido
   async create(domain, description = null) {
     const [result] = await db.query(
