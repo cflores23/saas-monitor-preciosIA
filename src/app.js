@@ -8,13 +8,11 @@ const dbTestRoutes = require('./routes/dbTest');
 const scraperRoutes = require('./routes/scraperRoutes');
 const allowedSitesRoutes = require('./routes/allowedSitesRoutes');
 const cron = require('node-cron');
-const { scrapeAllUsers } = require('./scraper/multiScraper');
 const path = require('path');
+
+// Importar scraper correctamente
 const multiScraper = require(path.join(__dirname, 'scraper', 'multiScraper'));
-
-
-
-
+const { scrapeAllUsers } = multiScraper;
 
 const app = express();
 
@@ -36,9 +34,7 @@ app.use('/api/allowed-sites', allowedSitesRoutes);
 const productRoutes = require('./routes/productRoutes');
 app.use('/products', productRoutes);
 
-
-
-// 🕑 Ejecutar el scraper todos los días a medianoche (00:00)
+// 🕑 Ejecutar el scraper todos los días a medianoche (03:00)
 cron.schedule('0 3 * * *', async () => {
   console.log('⏳ Ejecutando scraper automático (cada 24h, medianoche)...');
   try {
