@@ -4,7 +4,9 @@ const { scrapeProduct } = require('./scraper');
 const db = require('../config/db');
 
 async function scrapeAllUsers() {
+    console.log('🔎 scrapeAllUsers iniciado...');
   const [products] = await db.query('SELECT * FROM products');
+  console.log(`📦 Productos encontrados: ${products.length}`);
   let successCount = 0;
   let failCount = 0;
   const errors = []; // Nuevo: para log detallado

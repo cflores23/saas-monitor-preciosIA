@@ -46,17 +46,24 @@ router.get('/scrape', async (req, res) => {
 });
 
 router.get('/run', ensureAuthenticated, async (req, res) => {
+  console.log('➡️ Entrando a /api/scraper/run...');
   try {
     const result = await scrapeAllUsers();
+    console.log('✅ scrapeAllUsers terminó con:', result);
     res.json({ 
       success: true, 
       message: `Scraper ejecutado. Éxitos: ${result.successCount}, Fallos: ${result.failCount}`,
       ...result
     });
   } catch (err) {
-    console.error('Error en /run:', err);
-    res.status(500).json({ success: false, message: 'Error ejecutando scraper', error: err.message });
+    console.error('❌ Error en /run:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error ejecutando scraper', 
+      error: err.message 
+    });
   }
 });
+
 
 module.exports = router;
