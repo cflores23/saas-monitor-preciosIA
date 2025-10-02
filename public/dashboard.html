@@ -126,7 +126,7 @@
       resultDiv.style.color = "blue";
 
       try {
-        const res = await fetch('/scraper/run', { credentials: 'include' });
+        const res = await fetch('/api/scraper/run', { credentials: 'include' })
         const result = await res.json();
         
 
