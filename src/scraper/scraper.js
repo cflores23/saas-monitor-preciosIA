@@ -1,3 +1,4 @@
+// src/scraper/scraper.js
 const puppeteer = require('puppeteer');
 const db = require('../config/db');
 const { URL } = require('url');
@@ -17,7 +18,7 @@ async function scrapeProduct(url) {
     }
 
     browser = await puppeteer.launch({
-      headless: true,
+      headless: "new",
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 

@@ -1,3 +1,4 @@
+// src/scraper/multiScraper.js
 const Product = require('../models/Product');
 const AllowedSite = require('../models/AllowedSite');
 const { scrapeProduct } = require('./scraper');
@@ -10,7 +11,7 @@ async function scrapeAllUsers() {
 
   let successCount = 0;
   let failCount = 0;
-  const errors = [];
+  const errors = []; // Log detallado de fallos
 
   for (const product of products) {
     try {
@@ -33,6 +34,7 @@ async function scrapeAllUsers() {
         continue;
       }
 
+      // Guardar precio en la tabla prices
       await db.query(
         `INSERT INTO prices (product_id, price, currency, recorded_at) VALUES (?, ?, ?, NOW())`,
         [product.id, data.price, 'USD']
