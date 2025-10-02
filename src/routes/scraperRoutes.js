@@ -54,7 +54,8 @@ router.get('/run', ensureAuthenticated, async (req, res) => {
       ...result
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error('Error en /run:', err);
+    res.status(500).json({ success: false, message: 'Error ejecutando scraper', error: err.message });
   }
 });
 
