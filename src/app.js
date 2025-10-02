@@ -9,6 +9,7 @@ const scraperRoutes = require('./routes/scraperRoutes');
 const allowedSitesRoutes = require('./routes/allowedSitesRoutes');
 const cron = require('node-cron');
 const { scrapeAllUsers } = require('./scraper/multiScraper');
+const multiScraper = require('./src/scraper/multiScraper');
 
 
 
