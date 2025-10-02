@@ -45,7 +45,7 @@ router.get('/scrape', async (req, res) => {
   }
 });
 
-router.get('/run', ensureAuthenticated, async (req, res) => {
+router.get('/run', async (req, res) => {
   console.log('➡️ Entrando a /api/scraper/run...');
   try {
     const result = await scrapeAllUsers();
