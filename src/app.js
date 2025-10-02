@@ -8,6 +8,8 @@ const dbTestRoutes = require('./routes/dbTest');
 const scraperRoutes = require('./routes/scraperRoutes');
 const allowedSitesRoutes = require('./routes/allowedSitesRoutes');
 const cron = require('node-cron');
+const { scrapeAllUsers } = require('./src/scraper/multiScraper');
+
 
 const app = express();
 
