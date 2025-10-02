@@ -33,14 +33,30 @@ async function scrapeProduct(url) {
       // Nombre del producto
       const [nameEl] = await page.$x('//h1[contains(@class,"sku-title") or contains(@class,"sku-header__title")]');
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
-
-      // Precio usando tu XPath completo
-      const priceXPath = '/html/body/div[5]/div[4]/div[1]/div/div[4]/div/div/div[1]/div/div[1]/div[1]/div[1]/div/div/div/div[1]/span';
-      await page.waitForXPath(priceXPath, { timeout: 15000 });
-      const [priceEl] = await page.$x(priceXPath);
-      price = priceEl ? await page.evaluate(el => el.innerText.trim(), priceEl) : '';
-
-    } else if (hostname.includes('apple.com')) {
+    
+      // Precios posibles (XPath dinámico)
+      const priceXPaths = [
+        '/html/body/div[5]/div[4]/div[1]/div/div[4]/div/div/div[1]/div/div[1]/div[1]/div[1]/div/div/div/div[1]/span',
+        '//div[contains(@class,"priceView-hero-price")]/span',
+        '//div[contains(@class,"priceView-customer-price")]/span',
+        '//*[@data-testid="customer-price"]'
+      ];
+    
+      price = '';
+      for (const xp of priceXPaths) {
+        try {
+          await page.waitForXPath(xp, { timeout: 5000 });
+          const [el] = await page.$x(xp);
+          if (el) {
+            price = await page.evaluate(el => el.innerText.trim(), el);
+            if (price) break; // si encontramos el precio, salimos del loop
+          }
+        } catch (e) {
+          // no hacemos nada, probamos el siguiente XPath
+        }
+      }
+    }
+     else if (hostname.includes('apple.com')) {
       // Nombre
       const [nameEl] = await page.$x('//h1[contains(@class,"product-title")]');
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
