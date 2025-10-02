@@ -13,12 +13,17 @@ async function scrapeProduct(page, url) {
 
     if (hostname.includes('bestbuy.com')) {
       // BestBuy
-      name = await page.$eval('h1.sku-title', el => el.innerText.trim()).catch(() => '');
-      
-      // Intentar múltiples selectores de precio
+      name = await page.$eval('h1.sku-title, h1.sku-header__title', el => el.innerText.trim()).catch(() => '');
+    
+      // Esperar a que aparezca el contenedor de precio
+      await page.waitForSelector('.priceView-hero-price span, .priceView-customer-price span, [data-testid="customer-price"]', { timeout: 8000 }).catch(() => null);
+    
       price = await page.$eval('.priceView-hero-price span', el => el.innerText.trim())
         .catch(async () => {
-          return await page.$eval('.priceView-customer-price span', el => el.innerText.trim()).catch(() => '');
+          return await page.$eval('.priceView-customer-price span', el => el.innerText.trim())
+            .catch(async () => {
+              return await page.$eval('[data-testid="customer-price"]', el => el.innerText.trim()).catch(() => '');
+            });
         });
     }
      else if (hostname.includes('apple.com')) {
