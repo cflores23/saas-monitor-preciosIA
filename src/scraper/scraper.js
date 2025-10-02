@@ -2,22 +2,46 @@ const puppeteer = require('puppeteer');
 const db = require('../config/db');
 const { URL } = require('url');
 
-// Función reutilizable para esperar y obtener texto desde XPath
-async function getPriceByXPath(page, xPath) {
-  try {
-    await page.waitForFunction(
-      xp => {
-        const el = document.evaluate(xp, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-        return el && el.innerText.trim().length > 0;
-      },
-      { timeout: 15000 },
-      xPath
-    );
-    const [el] = await page.$x(xPath);
-    return el ? await page.evaluate(el => el.innerText.trim(), el) : '';
-  } catch {
-    return '';
+// Función para extraer texto desde XPath, soportando Shadow DOM
+async function getPrice(page, xPaths) {
+  for (const xp of xPaths) {
+    try {
+      await page.waitForFunction(
+        xp => {
+          const el = document.evaluate(xp, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+          return el && el.innerText.trim().length > 0;
+        },
+        { timeout: 15000 },
+        xp
+      );
+      const [el] = await page.$x(xp);
+      if (el) {
+        const text = await page.evaluate(el => el.innerText.trim(), el);
+        if (text) return text;
+      }
+    } catch {
+      // Ignora error y prueba siguiente XPath
+    }
   }
+
+  // Intento dentro de Shadow DOM si no encontró
+  for (const selector of ['div#pricing', 'div.price-section']) { // ejemplos comunes
+    try {
+      const text = await page.evaluate(sel => {
+        const host = document.querySelector(sel);
+        if (!host) return '';
+        const shadowRoot = host.shadowRoot;
+        if (!shadowRoot) return '';
+        const span = shadowRoot.querySelector('span');
+        return span ? span.innerText.trim() : '';
+      }, selector);
+      if (text) return text;
+    } catch {
+      continue;
+    }
+  }
+
+  return '';
 }
 
 async function scrapeProduct(url) {
@@ -52,16 +76,13 @@ async function scrapeProduct(url) {
       const [nameEl] = await page.$x('//h1[contains(@class,"sku-title") or contains(@class,"sku-header__title")]');
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
 
-      // Precio: intentamos varios XPaths dinámicos
+      // Precio
       const priceXPaths = [
         '//div[contains(@class,"priceView-hero-price")]/span',
         '//div[contains(@class,"priceView-customer-price")]/span',
         '//*[@data-testid="customer-price"]'
       ];
-      for (const xp of priceXPaths) {
-        price = await getPriceByXPath(page, xp);
-        if (price) break;
-      }
+      price = await getPrice(page, priceXPaths);
 
     } else if (hostname.includes('apple.com')) {
       // Nombre
@@ -69,8 +90,8 @@ async function scrapeProduct(url) {
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
 
       // Precio
-      const priceXPath = '//span[@data-autom="current-price"]';
-      price = await getPriceByXPath(page, priceXPath);
+      const priceXPaths = ['//span[@data-autom="current-price"]'];
+      price = await getPrice(page, priceXPaths);
 
     } else {
       throw new Error('Dominio no permitido');
