@@ -30,20 +30,22 @@ async function scrapeProduct(url) {
     let price = '';
 
     if (hostname.includes('bestbuy.com')) {
-      // Nombre
+      // Nombre del producto
       const [nameEl] = await page.$x('//h1[contains(@class,"sku-title") or contains(@class,"sku-header__title")]');
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
 
-      // Precio (XPath profundo)
+      // Precio usando tu XPath completo
       const priceXPath = '/html/body/div[5]/div[4]/div[1]/div/div[4]/div/div/div[1]/div/div[1]/div[1]/div[1]/div/div/div/div[1]/span';
       await page.waitForXPath(priceXPath, { timeout: 15000 });
       const [priceEl] = await page.$x(priceXPath);
       price = priceEl ? await page.evaluate(el => el.innerText.trim(), priceEl) : '';
 
     } else if (hostname.includes('apple.com')) {
+      // Nombre
       const [nameEl] = await page.$x('//h1[contains(@class,"product-title")]');
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
 
+      // Precio
       const [priceEl] = await page.$x('//span[@data-autom="current-price"]');
       price = priceEl ? await page.evaluate(el => el.innerText.trim(), priceEl) : '';
     } else {
@@ -64,4 +66,3 @@ async function scrapeProduct(url) {
 }
 
 module.exports = { scrapeProduct };
-
