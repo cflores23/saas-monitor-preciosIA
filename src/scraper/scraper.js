@@ -1,4 +1,3 @@
-// src/scraper/scraper.js
 const puppeteer = require('puppeteer');
 const db = require('../config/db');
 const { URL } = require('url');
@@ -14,30 +13,18 @@ async function scrapeProduct(url) {
     // Revisar si el dominio está permitido
     const [rows] = await db.execute('SELECT * FROM allowed_sites WHERE domain = ?', [domain]);
     if (rows.length === 0) {
-      console.warn(`❌ Dominio no permitido: ${domain}`);
       return { error: `Dominio no permitido: ${domain}` };
     }
 
     browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-http2',       // ⚡ Forzar HTTP/1.1
-        '--disable-dev-shm-usage'
-      ]
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 
     const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
-    // Opcional: simular navegador real
-    await page.setUserAgent(
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
-      'AppleWebKit/537.36 (KHTML, like Gecko) ' +
-      'Chrome/120.0.0.0 Safari/537.36'
-    );
-
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 }); // 🔹 aumentar timeout
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
     const product = await page.evaluate((domain) => {
       let name = '';
@@ -58,18 +45,17 @@ async function scrapeProduct(url) {
       }
 
       if (price) price = price.replace(/[^0-9.,]/g, '').replace(',', '.');
-
       return { name, price };
     }, domain);
 
     console.log('📦 Datos extraídos:', product);
 
     if (!product.name || !product.price) {
-      console.warn('❌ No se pudo extraer nombre o precio.');
       return { error: 'No se pudo extraer nombre o precio.' };
     }
 
-    return { domain, ...product, currency: 'USD' };
+    return { domain, ...product };
+
   } catch (err) {
     console.error('❌ Error en scraper:', err.message);
     return { error: 'Error al procesar el scraping.' };
