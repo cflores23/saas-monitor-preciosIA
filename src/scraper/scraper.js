@@ -5,7 +5,7 @@ const { URL } = require('url');
 
 async function scrapeProduct(page, url) {
   try {
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
     const hostname = new URL(url).hostname;
     let name = '';
@@ -16,7 +16,7 @@ async function scrapeProduct(page, url) {
       name = await page.$eval('h1.sku-title, h1.sku-header__title', el => el.innerText.trim()).catch(() => '');
     
       // Esperar a que aparezca el contenedor de precio
-      await page.waitForSelector('.priceView-hero-price span, .priceView-customer-price span, [data-testid="customer-price"]', { timeout: 8000 }).catch(() => null);
+      await page.waitForSelector('.priceView-hero-price span, .priceView-customer-price span, [data-testid="customer-price"]', { timeout: 15000 }).catch(() => null);
     
       price = await page.$eval('.priceView-hero-price span', el => el.innerText.trim())
         .catch(async () => {
