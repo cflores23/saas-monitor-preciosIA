@@ -2,9 +2,27 @@ const puppeteer = require('puppeteer');
 const db = require('../config/db');
 const { URL } = require('url');
 
+// Función reutilizable para esperar y obtener texto desde XPath
+async function getPriceByXPath(page, xPath) {
+  try {
+    await page.waitForFunction(
+      xp => {
+        const el = document.evaluate(xp, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        return el && el.innerText.trim().length > 0;
+      },
+      { timeout: 15000 },
+      xPath
+    );
+    const [el] = await page.$x(xPath);
+    return el ? await page.evaluate(el => el.innerText.trim(), el) : '';
+  } catch {
+    return '';
+  }
+}
+
 async function scrapeProduct(url) {
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: "new", // evita warning de Puppeteer old Headless
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -30,40 +48,30 @@ async function scrapeProduct(url) {
     let price = '';
 
     if (hostname.includes('bestbuy.com')) {
-      // Nombre del producto
+      // Nombre
       const [nameEl] = await page.$x('//h1[contains(@class,"sku-title") or contains(@class,"sku-header__title")]');
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
-    
-      // Precios posibles (XPath dinámico)
+
+      // Precio: intentamos varios XPaths dinámicos
       const priceXPaths = [
-        '/html/body/div[5]/div[4]/div[1]/div/div[4]/div/div/div[1]/div/div[1]/div[1]/div[1]/div/div/div/div[1]/span',
         '//div[contains(@class,"priceView-hero-price")]/span',
         '//div[contains(@class,"priceView-customer-price")]/span',
         '//*[@data-testid="customer-price"]'
       ];
-    
-      price = '';
       for (const xp of priceXPaths) {
-        try {
-          await page.waitForXPath(xp, { timeout: 5000 });
-          const [el] = await page.$x(xp);
-          if (el) {
-            price = await page.evaluate(el => el.innerText.trim(), el);
-            if (price) break; // si encontramos el precio, salimos del loop
-          }
-        } catch (e) {
-          // no hacemos nada, probamos el siguiente XPath
-        }
+        price = await getPriceByXPath(page, xp);
+        if (price) break;
       }
-    }
-     else if (hostname.includes('apple.com')) {
+
+    } else if (hostname.includes('apple.com')) {
       // Nombre
       const [nameEl] = await page.$x('//h1[contains(@class,"product-title")]');
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
 
       // Precio
-      const [priceEl] = await page.$x('//span[@data-autom="current-price"]');
-      price = priceEl ? await page.evaluate(el => el.innerText.trim(), priceEl) : '';
+      const priceXPath = '//span[@data-autom="current-price"]';
+      price = await getPriceByXPath(page, priceXPath);
+
     } else {
       throw new Error('Dominio no permitido');
     }
