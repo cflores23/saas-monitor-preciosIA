@@ -5,7 +5,7 @@ const { URL } = require('url');
 
 async function scrapeProduct(page, url) {
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    await page.goto(url, { waitUntil: 'networkidle2' });
 
     const hostname = new URL(url).hostname;
     let name = '';
@@ -13,13 +13,15 @@ async function scrapeProduct(page, url) {
 
     if (hostname.includes('bestbuy.com')) {
       // BestBuy
-      name = await page.$eval('h1.sku-header__title', el => el.innerText.trim()).catch(() => '');
-      price = await page.$eval('.priceView-customer-price span', el => el.innerText.trim()).catch(() => '');
+      await page.waitForSelector('h1.sku-header__title').catch(() => {});
+  await page.waitForSelector('.priceView-customer-price span').catch(() => {});
+  name = await page.$eval('h1.sku-header__title', el => el.innerText.trim()).catch(() => '');
+  price = await page.$eval('.priceView-customer-price span', el => el.innerText.trim()).catch(() => '');
     } else if (hostname.includes('apple.com')) {
       // Apple
-      name = await page.$eval('h1.product-title', el => el.innerText.trim()).catch(() => '');
-      // Precio en Apple puede estar dentro de aria-label o data-price
-      price = await page.$eval('[data-autom="current-price"], [aria-label*="Price"]', el => el.innerText.trim()).catch(() => '');
+      await page.waitForSelector('h1.product-title').catch(() => {});
+  name = await page.$eval('h1.product-title', el => el.innerText.trim()).catch(() => '');
+  price = await page.$eval('[data-autom="current-price"]', el => el.innerText.trim()).catch(() => '');
     } else {
       throw new Error('Dominio no permitido');
     }
