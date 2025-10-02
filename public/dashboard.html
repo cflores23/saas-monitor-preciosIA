@@ -185,7 +185,10 @@
     // Eventos
     document.getElementById('addBtn').addEventListener('click', addProduct);
     document.getElementById('logoutBtn').addEventListener('click', () => {
-      fetch('/auth/logout').then(() => window.location.href = '/login.html');
+      etch('/auth/logout', {
+        method: 'GET',
+        credentials: 'include'
+      }).then(() => window.location.href = '/login.html');
     });
   </script>
 </body>

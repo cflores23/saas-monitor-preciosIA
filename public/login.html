@@ -32,7 +32,8 @@
       fetch('/auth/google-popup', {  // <- coincide con la ruta
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: id_token }) // <- coincide con el backend
+        body: JSON.stringify({ credential: id_token }), // <- coincide con el backend
+        credentials: 'include'
       })
 
       .then(res => res.json())

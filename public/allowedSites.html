@@ -38,7 +38,9 @@
   <script>
     async function loadSites() {
       try {
-        const res = await fetch('/allowed-sites');
+        const res = await fetch('/allowed-sites', {
+          credentials: 'include'
+        });
         if (!res.ok) throw new Error('Error cargando sitios');
         const sites = await res.json();
         const tbody = document.getElementById('sitesTable');
@@ -69,7 +71,8 @@
         const res = await fetch('/allowed-sites/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ domain, description })
+          body: JSON.stringify({ domain, description }),
+          credentials: 'include'
         });
         if (!res.ok) throw new Error('Error agregando el dominio');
         document.getElementById('domain').value = '';
@@ -88,7 +91,8 @@
         const res = await fetch('/allowed-sites/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id })
+          body: JSON.stringify({ id }),
+          credentials: 'include'
         });
         if (!res.ok) throw new Error('Error eliminando el dominio');
         loadSites();
