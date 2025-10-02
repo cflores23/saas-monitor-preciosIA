@@ -14,7 +14,10 @@ const path = require('path');
 const { scrapeAllUsers } = require(path.join(__dirname, 'scraper', 'multiScraper'));
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://sistecd-labs.shop',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.static('public')); // Servir frontend
 

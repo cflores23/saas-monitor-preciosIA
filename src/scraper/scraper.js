@@ -14,22 +14,35 @@ async function scrapeProduct(url) {
     // Revisar si el dominio está permitido
     const [rows] = await db.execute('SELECT * FROM allowed_sites WHERE domain = ?', [domain]);
     if (rows.length === 0) {
+      console.warn(`❌ Dominio no permitido: ${domain}`);
       return { error: `Dominio no permitido: ${domain}` };
     }
 
     browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-http2',       // ⚡ Forzar HTTP/1.1
+        '--disable-dev-shm-usage'
+      ]
     });
 
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2' });
+
+    // Opcional: simular navegador real
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+      'AppleWebKit/537.36 (KHTML, like Gecko) ' +
+      'Chrome/120.0.0.0 Safari/537.36'
+    );
+
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 }); // 🔹 aumentar timeout
 
     const product = await page.evaluate((domain) => {
       let name = '';
       let price = '';
 
-      // Extraer nombre y precio según el dominio
       if (domain.includes('apple.com')) {
         name = document.querySelector('h1')?.innerText || '';
         price = document.querySelector('meta[itemprop="price"]')?.content || '';
@@ -37,7 +50,6 @@ async function scrapeProduct(url) {
         name = document.querySelector('.sku-title h1')?.innerText || '';
         price = document.querySelector('.priceView-customer-price span')?.innerText || '';
       } else {
-        // fallback genérico
         name = document.querySelector('h1')?.innerText || '';
         price =
           document.querySelector('.price')?.innerText ||
@@ -45,10 +57,7 @@ async function scrapeProduct(url) {
           '';
       }
 
-      // Limpiar precio (solo números y punto decimal)
-      if (price) {
-        price = price.replace(/[^0-9.,]/g, '').replace(',', '.');
-      }
+      if (price) price = price.replace(/[^0-9.,]/g, '').replace(',', '.');
 
       return { name, price };
     }, domain);
@@ -56,10 +65,11 @@ async function scrapeProduct(url) {
     console.log('📦 Datos extraídos:', product);
 
     if (!product.name || !product.price) {
+      console.warn('❌ No se pudo extraer nombre o precio.');
       return { error: 'No se pudo extraer nombre o precio.' };
     }
 
-    return { domain, ...product };
+    return { domain, ...product, currency: 'USD' };
   } catch (err) {
     console.error('❌ Error en scraper:', err.message);
     return { error: 'Error al procesar el scraping.' };

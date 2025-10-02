@@ -38,6 +38,19 @@
   <div id="scraperResult" style="margin-top:10px; font-weight: bold;"></div>
   <button id="logoutBtn">Cerrar sesión</button>
 
+  <h3>Errores del Scraper</h3>
+<table id="scraperErrorsTable" style="display:none; border-collapse: collapse; margin-top:10px; width:100%;">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>URL</th>
+      <th>Motivo</th>
+    </tr>
+  </thead>
+  <tbody id="scraperErrorsBody"></tbody>
+</table>
+
+
   <script>
     let currentUserId = null;
 
@@ -122,28 +135,50 @@
     const resultDiv = document.getElementById('scraperResult');
 
     document.getElementById('scrapeBtn').addEventListener('click', async () => {
-      resultDiv.textContent = "Ejecutando scraper..."; 
-      resultDiv.style.color = "blue";
+  resultDiv.textContent = "Ejecutando scraper..."; 
+  resultDiv.style.color = "blue";
 
-      try {
-        const res = await fetch('/api/scraper/run', { credentials: 'include' })
-        const result = await res.json();
-        
+  const errorsTable = document.getElementById('scraperErrorsTable');
+  const errorsBody = document.getElementById('scraperErrorsBody');
+  errorsBody.innerHTML = '';
+  errorsTable.style.display = 'none';
 
-        if (result.success) {
-          resultDiv.textContent = result.message; 
-          resultDiv.style.color = "green";
-        } else {
-          resultDiv.textContent = 'Error: ' + result.message;
-          resultDiv.style.color = "red";
-        }
+  try {
+    const res = await fetch('/api/scraper/run', { credentials: 'include' });
+    const result = await res.json();
 
-        loadProducts(); // refrescar tabla
-      } catch (err) {
-        resultDiv.textContent = "Error ejecutando scraper.";
-        resultDiv.style.color = "red";
+    if (result.success) {
+      resultDiv.textContent = result.message; 
+      resultDiv.style.color = "green";
+
+      // Mostrar errores si existen
+      if (result.errors && result.errors.length > 0) {
+        errorsTable.style.display = 'table';
+        result.errors.forEach(e => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${e.productId}</td>
+            <td><a href="${e.url}" target="_blank">${e.url}</a></td>
+            <td>${e.reason}</td>
+          `;
+          errorsBody.appendChild(tr);
+        });
       }
-    });
+
+    } else {
+      resultDiv.textContent = 'Error: ' + result.message;
+      resultDiv.style.color = "red";
+    }
+
+    loadProducts(); // refrescar tabla de productos
+
+  } catch (err) {
+    resultDiv.textContent = "Error ejecutando scraper.";
+    resultDiv.style.color = "red";
+    console.error(err);
+  }
+});
+
 
 
 

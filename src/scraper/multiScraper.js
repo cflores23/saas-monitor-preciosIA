@@ -1,15 +1,17 @@
+// src/scraper/multiScraper.js
 const Product = require('../models/Product');
 const AllowedSite = require('../models/AllowedSite');
 const { scrapeProduct } = require('./scraper');
 const db = require('../config/db');
 
 async function scrapeAllUsers() {
-    console.log('🔎 scrapeAllUsers iniciado...');
+  console.log('🔎 scrapeAllUsers iniciado...');
   const [products] = await db.query('SELECT * FROM products');
   console.log(`📦 Productos encontrados: ${products.length}`);
+
   let successCount = 0;
   let failCount = 0;
-  const errors = []; // Nuevo: para log detallado
+  const errors = []; // Log detallado de fallos
 
   for (const product of products) {
     try {
@@ -19,34 +21,37 @@ async function scrapeAllUsers() {
       if (!allowed) {
         console.warn(`❌ Scraping no permitido para ${product.url}`);
         failCount++;
-        errors.push({ product: product.id, reason: 'Dominio no permitido' });
+        errors.push({ productId: product.id, url: product.url, reason: 'Dominio no permitido' });
         continue;
       }
 
       const data = await scrapeProduct(product.url);
-      if (!data || !data.price) {
+
+      if (data.error || !data.price) {
         console.warn(`❌ No se obtuvo precio para ${product.url}`);
         failCount++;
-        errors.push({ product: product.id, reason: 'No se obtuvo precio', data });
+        errors.push({ productId: product.id, url: product.url, reason: data.error || 'No se obtuvo precio', data });
         continue;
       }
 
+      // Guardar precio en la tabla prices
       await db.query(
         `INSERT INTO prices (product_id, price, currency, recorded_at) VALUES (?, ?, ?, NOW())`,
-        [product.id, data.price, data.currency || 'USD']
+        [product.id, data.price, 'USD']
       );
 
       successCount++;
+      console.log(`✅ Precio actualizado: ${product.url} → ${data.price}`);
 
     } catch (err) {
-      console.error(`❌ Error scrapeando producto ${product.id}:`, err);
+      console.error(`❌ Error scrapeando producto ${product.id} (${product.url}):`, err.message);
       failCount++;
-      errors.push({ product: product.id, reason: err.message || 'Error desconocido', stack: err.stack });
+      errors.push({ productId: product.id, url: product.url, reason: err.message, stack: err.stack });
     }
   }
 
-  console.info(`Scraper finalizado. Éxitos: ${successCount}, Fallos: ${failCount}`);
-  return { successCount, failCount, errors }; // Nuevo: devuelve errores
+  console.info(`🔹 Scraper finalizado. Éxitos: ${successCount}, Fallos: ${failCount}`);
+  return { successCount, failCount, errors };
 }
 
 module.exports = { scrapeAllUsers };
