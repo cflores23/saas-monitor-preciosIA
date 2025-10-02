@@ -42,7 +42,7 @@
     let currentUserId = null;
 
     // Mostrar usuario y cargar productos
-    fetch('/auth/session-user')
+    fetch('/auth/session-user', { credentials: 'include' })
       .then(res => {
         if (!res.ok) throw new Error('No autenticado');
         return res.json();
@@ -60,7 +60,7 @@
 
     // Cargar productos del usuario y sus últimos precios
     async function loadProducts() {
-      const res = await fetch('/products');
+      const res = await fetch('/products', { credentials: 'include' });
       const data = await res.json();
       if (!data.success) return;
 
@@ -68,7 +68,7 @@
       tbody.innerHTML = '';
       for (const p of data.data) {
         // Obtener último precio
-        const priceRes = await fetch(`/products/${p.id}/last-price`);
+        const priceRes = await fetch(`/products/${p.id}/last-price`, { credentials: 'include' });
         const priceData = await priceRes.json();
         const lastPrice = priceData.success ? priceData.price : '-';
         const priceDate = priceData.success ? priceData.recorded_at : '-';
@@ -97,7 +97,8 @@
       await fetch('/products/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, url, description })
+        body: JSON.stringify({ name, url, description }),
+        credentials: 'include'
       });
 
       document.getElementById('name').value = '';
@@ -111,7 +112,8 @@
       await fetch('/products/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({ id }),
+        credentials: 'include'
       });
       loadProducts();
     }
@@ -124,8 +126,9 @@
       resultDiv.style.color = "blue";
 
       try {
-        const res = await fetch('/scraper/run');
+        const res = await fetch('/scraper/run', { credentials: 'include' });
         const result = await res.json();
+        
 
         if (result.success) {
           resultDiv.textContent = result.message; 
