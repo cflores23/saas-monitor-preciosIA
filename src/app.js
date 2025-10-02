@@ -26,6 +26,10 @@ app.use('/api/example', exampleRoutes);
 app.use('/api', dbTestRoutes);
 app.use('/api/scraper', scraperRoutes);
 app.use('/api/allowed-sites', allowedSitesRoutes);
+const productRoutes = require('./routes/productRoutes');
+app.use('/products', productRoutes);
+
+
 
 // 🕑 Ejecutar el scraper todos los días a medianoche (00:00)
 cron.schedule('0 3 * * *', async () => {
