@@ -12,7 +12,7 @@ async function scrapeAllUsers() {
   // Traer los dominios permitidos de la base de datos
   const [rows] = await db.query('SELECT domain FROM allowed_sites');
   const allowedDomains = rows.map(r => r.domain); 
-  
+
   let successCount = 0;
   let failCount = 0;
   const errors = []; // Log detallado de fallos
@@ -28,6 +28,16 @@ async function scrapeAllUsers() {
         errors.push({ productId: product.id, url: product.url, reason: 'Dominio no permitido' });
         continue;
       }
+
+      const hostname = new URL(url).hostname.toLowerCase(); // www.mercadolibre.com.mx
+      const allowedDomains = rows.map(r => r.domain.toLowerCase()); // mercadolibre.com
+
+      const isAllowed = allowedDomains.some(domain => hostname === domain || hostname.endsWith(`.${domain}`));
+
+      if (!isAllowed) {
+        throw new Error('Dominio no permitido');
+      }
+
 
       const data = await scrapeProduct(product.url);
 
