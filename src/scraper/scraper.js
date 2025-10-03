@@ -53,14 +53,11 @@ async function scrapeProduct(url) {
       const [nameEl] = await page.$x('//h1[@class="ui-pdp-title"]');
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
 
-      // Precio
-      const [priceEl] = await page.$x('//span[@class="andes-money-amount__fraction"]');
-      const [decimalsEl] = await page.$x('//span[@class="andes-money-amount__cents"]');
-
-      const priceInt = priceEl ? await page.evaluate(el => el.innerText.trim(), priceEl) : '';
-      const priceDecimals = decimalsEl ? await page.evaluate(el => el.innerText.trim(), decimalsEl) : '';
-
-      price = priceInt ? (priceDecimals ? `${priceInt}.${priceDecimals}` : priceInt) : '';
+      // Precio usando XPath exacto probado en Chrome
+      const priceXPath = '/html/body/main/div[2]/div[5]/div[2]/div[2]/div/div[1]/form/div[1]/ul/li[2]/div/div[2]/div/div/div/div[1]/span/span/span[2]';
+      await page.waitForXPath(priceXPath, { timeout: 15000 });
+      const [priceEl] = await page.$x(priceXPath);
+      price = priceEl ? await page.evaluate(el => el.innerText.trim(), priceEl) : '';
 
     } else {
       throw new Error('Dominio no permitido');
