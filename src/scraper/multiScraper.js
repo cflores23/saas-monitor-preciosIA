@@ -9,6 +9,10 @@ async function scrapeAllUsers() {
   const [products] = await db.query('SELECT * FROM products');
   console.log(`📦 Productos encontrados: ${products.length}`);
 
+  // Traer los dominios permitidos de la base de datos
+  const [rows] = await db.query('SELECT domain FROM allowed_sites');
+  const allowedDomains = rows.map(r => r.domain); 
+  
   let successCount = 0;
   let failCount = 0;
   const errors = []; // Log detallado de fallos
