@@ -25,12 +25,22 @@ async function scrapeProduct(url) {
 
     await page.screenshot({ path: 'test.png', fullPage: true });
 
-    const hostname = new URL(url).hostname;
+    // -------------------- VALIDACIÓN DE DOMINIO --------------------
+    const [rows] = await db.query('SELECT domain FROM allowed_sites');
+    const allowedDomains = rows.map(r => r.domain.toLowerCase());
+
+    const hostname = new URL(url).hostname.toLowerCase();
+    const normalizedHost = hostname.startsWith('www.') ? hostname.slice(4) : hostname;
+
+    if (!allowedDomains.some(domain => normalizedHost.includes(domain))) {
+      throw new Error('Dominio no permitido');
+    }
+
     let name = '';
     let price = '';
 
     // -------------------- BEST BUY --------------------
-    if (hostname.includes('bestbuy.com')) {
+    if (normalizedHost.includes('bestbuy.com')) {
       const [nameEl] = await page.$x('//h1[contains(@class,"sku-title") or contains(@class,"sku-header__title")]');
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
 
@@ -40,7 +50,7 @@ async function scrapeProduct(url) {
       price = priceEl ? await page.evaluate(el => el.innerText.trim(), priceEl) : '';
 
     // -------------------- APPLE --------------------
-    } else if (hostname.includes('apple.com')) {
+    } else if (normalizedHost.includes('apple.com')) {
       const [nameEl] = await page.$x('//h1[contains(@class,"product-title")]');
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
 
@@ -48,15 +58,15 @@ async function scrapeProduct(url) {
       price = priceEl ? await page.evaluate(el => el.innerText.trim(), priceEl) : '';
 
     // -------------------- MERCADO LIBRE --------------------
-    } else if (hostname.includes('mercadolibre.com')) {
+    } else if (normalizedHost.includes('mercadolibre.com')) {
       // Nombre del producto
       const [nameEl] = await page.$x('//h1[@class="ui-pdp-title"]');
       name = nameEl ? await page.evaluate(el => el.innerText.trim(), nameEl) : '';
 
-      // Precio usando XPath exacto probado en Chrome
-      const priceXPath = '/html/body/main/div[2]/div[5]/div[2]/div[2]/div/div[1]/form/div[1]/ul/li[2]/div/div[2]/div/div/div/div[1]/span/span/span[2]';
-      await page.waitForXPath(priceXPath, { timeout: 15000 });
-      const [priceEl] = await page.$x(priceXPath);
+      // Precio usando XPath completo
+      const priceXPathFull = '/html/body/main/div[2]/div[5]/div[2]/div[2]/div/div[1]/form/div[1]/ul/li[2]/div/div[2]/div/div/div/div[1]/span/span/span[2]';
+      await page.waitForXPath(priceXPathFull, { timeout: 15000 });
+      const [priceEl] = await page.$x(priceXPathFull);
       price = priceEl ? await page.evaluate(el => el.innerText.trim(), priceEl) : '';
 
     } else {
