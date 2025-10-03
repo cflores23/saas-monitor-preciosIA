@@ -27,14 +27,16 @@ async function scrapeProduct(url) {
 
     // -------------------- VALIDACIÓN DE DOMINIO --------------------
     const [rows] = await db.query('SELECT domain FROM allowed_sites');
-    const allowedDomains = rows.map(r => r.domain.toLowerCase());
+const allowedDomains = rows.map(r => r.domain.toLowerCase().trim());
 
-    const hostname = new URL(url).hostname.toLowerCase();
-    const normalizedHost = hostname.startsWith('www.') ? hostname.slice(4) : hostname;
+const hostname = new URL(url).hostname.toLowerCase();
 
-    if (!allowedDomains.some(domain => normalizedHost.includes(domain))) {
-      throw new Error('Dominio no permitido');
-    }
+// permitir subdominios y TLDs (como mercadolibre.com.mx)
+const isAllowed = allowedDomains.some(domain => hostname === domain || hostname.endsWith('.' + domain));
+
+if (!isAllowed) {
+  throw new Error('Dominio no permitido');
+}
 
     let name = '';
     let price = '';
